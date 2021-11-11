@@ -7,9 +7,13 @@ import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import Root from './navigations/Root';
 import { ThemeProvider } from 'styled-components/native';
+import { QueryClient, QueryClientProvider } from "react-query";
 import { darkTheme, lightTheme } from './styled';
 
+const queryClient = new QueryClient();
+
 const loadFont = (fonts) => fonts.map((font)=> Font.loadAsync(font));
+
 const loadAsset = (assets) => assets.map((asset)=>{
   if(typeof asset === 'string'){
     return Image.prefetch(asset);
@@ -34,17 +38,18 @@ export default function App() {
     onError={console.error} />)
   }
   return (
-    <ThemeProvider theme = {isDark? darkTheme:lightTheme}>
-      <NavigationContainer>
-        <Root/>
-      </NavigationContainer>
-    </ThemeProvider>
+    <QueryClientProvider client ={queryClient}>
+      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+        <NavigationContainer>
+          <Root />
+        </NavigationContainer>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',

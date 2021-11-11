@@ -1,18 +1,16 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Dimensions, StyleSheet, useColorScheme } from "react-native";
+import { ActivityIndicator, Dimensions, RefreshControl, StyleSheet, useColorScheme, View } from "react-native";
 import Swiper from "react-native-swiper";
 import styled from "styled-components/native";
-import Poster from "./components/mini-Com/Poster";
 import Slider from "./components/Slider";
-import Score from "./components/mini-Com/Score";
 import HorizontalShowcase from "./components/Hor-Show";
+import Vertical_Showcase from "./components/Ver-Show";
+import { useQuery, useQueryClient } from "react-query";
+import { MovieResponse, moviesAPI } from "../api";
 
 
-const API_KEY = "34161cf6d910bb2a80ad0681aa12722e"
-
-
-const Container = styled.ScrollView``;
+const Container = styled.FlatList``;
 const Loader = styled.View`
     flex : 1;
     justify-content : center;
@@ -28,156 +26,132 @@ const Now = styled.Text`
     color : rgba(10, 250, 255, 0.9);
     text-shadow: 1px 1px 3px rgba(10, 250, 255, 0.7);
     `;
-const Trending = styled.ScrollView`
-    margin-bottom : 25px;
+const TrendingContainer = styled.View``;
+const TrendingFlat = styled.FlatList`
+    margin-bottom: 30px;
     `;
 const TrendingTitle = styled.Text`
     color : ${props=>props.theme.textColor};
-    font-size: 20px;
-    font-weight: bold;
-    margin-left: 30px;
-    margin-bottom: 25px;
-    `;
-const ComingSoon = styled.View`
-    margin-left: 30px;
-    `;
-const ComingSoonTitle = styled.Text`
-    color : ${props=>props.theme.textColor};
+    margin-left: 35px;
+    margin-bottom: 20px;
     font-size : 20px;
     font-weight: bold;
     `;
-const CSmovie = styled.View`
-    flex-direction : row;
-    margin : 20px 0px;
-    `;
-const Column = styled.View`
-    margin-left: 20px;
-    width: 60%;
-    height: 100%;
-    `;
-const Title =styled.Text`
-    padding-top: 5px;
-    font-size: 18px;
-    font-weight: 800;
+const VSeparator = styled.View`height : 20px;`;
+const HSeparator = styled.View`width : 20px;`;
+const ComingSoonTitle = styled.Text`
     color : ${props=>props.theme.textColor};
-    `;
-const Release = styled.Text`
-    color : ${props=>props.theme.textColor};
-    font-weight: 500;
-    `;
-const Overview = styled.Text`
-    margin-top: 5px;
-    color : ${props=>props.theme.tintColor};
+    margin-left: 35px;
+    margin-bottom: 20px;
+    font-size : 20px;
+    font-weight: bold;
     `;
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const Moives: React.FC<NativeStackScreenProps<any, "Movies">> = () =>{
-    const isDark = useColorScheme() === 'dark';
-    const [loading, setLoading] = useState(true);
-    const [nowPlaying, setNowPlaying] = useState([]);
-    const [upComing, setupComing] = useState([]);
-    const [trending, setTrending] = useState([]);
+    const queryClient = useQueryClient();
+    const {
+       isLoading : nowPlayingLoading,
+       data: nowPlayingData,
+       isRefetching : isRefetchingnowPlaying
+      }
+     = useQuery<MovieResponse>(["movies","nowPlayng"], moviesAPI.movie_NowPlaying );
+    const {
+       isLoading : UpComingLoading,
+       data: UpComingData,
+       isRefetching : isRefetchingUpComing
+      }
+     = useQuery<MovieResponse>(["movies","upComing"], moviesAPI.movie_UpComing );
+    const {
+       isLoading : TrendingLoading,
+       data: TrendingData,
+       isRefetching : isRefetchingTrending
+      }
+     = useQuery<MovieResponse>(["movies","trending"], moviesAPI.movie_Trending );
 
-    const getNowPlaying = async() => {
-        const { results } = await (
-            await fetch( 
-                `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=KR `
-                )
-            ).json();
-
-        setNowPlaying(results);
-    };
-
-    const getUpComing = async() => {
-        const { results } = await (
-            await fetch( 
-                `https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1&region=KR `
-                )
-            ).json();
-
-        setupComing(results)
-    };
-
-    const getTrending = async() => {
-        const { results } = await (
-            await fetch( 
-                `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=en-US&page=1&region=KR `
-                )
-            ).json();
-
-        setTrending(results);
-    };
-
-    const getData = async () => {
-        // 모두 기다리기 
-        await Promise.all([getNowPlaying(), getUpComing(), getTrending()])
-        setLoading(false);
+    const onRefresh = async() => {
+      queryClient.refetchQueries(["movies"])
     }
 
-    useEffect(()=>{
-        getData();
-    }, []);
+    const renderHS = ({ item })=>(
+        <HorizontalShowcase 
+        poster_path={item.poster_path}
+        original_title={item.original_title}
+        vote_average={item.vote_average}
+        />
+    );
+    const renderVS = ({ item })=>(
+        <Vertical_Showcase
+            poster_path={item.poster_path}
+            original_title={item.original_title}
+            release_date={item.release_date}
+            vote_average={item.vote_average}
+            overview={item.overview}
+        />
+    )
 
+    const loading = nowPlayingLoading || UpComingLoading || TrendingLoading 
+    const refreshing = isRefetchingnowPlaying || isRefetchingUpComing || isRefetchingTrending
+    console.log(refreshing);
 
     return loading ? (
-        <Loader>
-            <ActivityIndicator size="large"/>
-        </Loader>        
-    ):(
-        <Container>
-            
+      <Loader>
+        <ActivityIndicator size="large" />
+      </Loader>
+    ) : (
+      UpComingData ? <Container
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        keyExtractor={(item) => item.id + ""}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <HSeparator/>}
+        ListHeaderComponent={
+          <>
             <Swiper
-                horizontal
-                autoplay
-                autoplayTimeout={3}
-                loop
-                showsButtons={false}
-                showsPagination={false}
-                containerStyle={{marginBottom : 30, width : "100%", height : SCREEN_HEIGHT/3  }}
-             >
-                {nowPlaying.map(movie=>(
+              horizontal
+              autoplay
+              autoplayTimeout={2.5}
+              loop
+              showsButtons={false}
+              showsPagination={false}
+              containerStyle={{
+                marginBottom: 30,
+                width: "100%",
+                height: SCREEN_HEIGHT / 3,
+              }}
+            >
+              {nowPlayingData?.results.map((movie) => (
                 <Slider
-                    key={movie.id}
-                    backdrop_path={movie.backdrop_path}
-                    poster_path={movie.poster_path}
-                    original_title={movie.original_title}
-                    vote_average={movie.vote_average}
-                    overview={movie.overview}
-                 />
-                ))}
+                  key={movie.id}
+                  backdrop_path={movie.backdrop_path || ""}
+                  poster_path={movie.poster_path || ""}
+                  original_title={movie.orginal_title}
+                  vote_average={movie.vote_average}
+                  overview={movie.overview}
+                />
+              ))}
             </Swiper>
             <Now>Now Play</Now>
-            <TrendingTitle>Trending Movies</TrendingTitle>
-               <Trending
+            <TrendingContainer>
+              <TrendingTitle>Trending Movies</TrendingTitle>
+              {TrendingData ? <TrendingFlat
                 horizontal
-                showsHorizontalScrollIndicator = {false}
-                contentContainerStyle = {{marginLeft : 20}}
-            >
-                    {trending.map(movie=>(
-                        <HorizontalShowcase 
-                            key={movie.id}
-                            poster_path={movie.poster_path}
-                            original_title={movie.original_title}
-                            vote_average={movie.vote_average}
-                        />
-                    ))}
-            </Trending>
-            <ComingSoon>
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => item.id + ""}
+                contentContainerStyle={{ paddingHorizontal: 30 }}
+                ItemSeparatorComponent={() =><VSeparator/>}
+                data={TrendingData.results}
+                renderItem={renderHS}
+              /> : null }
+            </TrendingContainer>
             <ComingSoonTitle>Coming Soon</ComingSoonTitle>
-            {upComing.map(movie => (
-                <CSmovie key={movie.id}>
-                    <Poster path={movie.poster_path}/>
-                    <Column>
-                        <Title>{movie.original_title}</Title>
-                        <Release>{movie.release_date}</Release>
-                        <Overview>{movie.overview.slice(0, 180)}...</Overview>
-                    </Column>
-                </CSmovie>
-            ))}
-            </ComingSoon>
-        </Container>
-    )
+          </>
+        }
+        data={UpComingData.results}
+        renderItem={renderVS}
+      /> : null 
+    );
     
 }
 

@@ -56,7 +56,7 @@ const Slider:React.FC<SliderProps> = (
            style={StyleSheet.absoluteFill}
            source={{uri:imgPATH(backdrop_path)}}/>
         <BlurView 
-        intensity={110}
+        intensity={120}
         tint = {isDark? 'dark':'light'}
         style={StyleSheet.absoluteFill}>
            <Wrapper>

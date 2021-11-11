@@ -5,11 +5,11 @@ import Score from "./mini-Com/Score";
 
 
 const Movie = styled.View`
-    margin-right : 30px;
     align-items: center;
     justify-content: center;
     `;
 const MovieTitle = styled.Text`
+    margin-top: 5px;
     font-size : 14px;
     font-weight: 700;
     color : ${props=>props.theme.textColor};
