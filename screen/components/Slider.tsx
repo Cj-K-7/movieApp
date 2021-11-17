@@ -1,10 +1,12 @@
 import React from "react";
 import styled from "styled-components/native";
-import {StyleSheet, useColorScheme} from 'react-native'
+import {StyleSheet, TouchableWithoutFeedback, useColorScheme} from 'react-native'
+import { useNavigation } from "@react-navigation/native"
 import { BlurView } from "expo-blur";
 import { imgPATH } from "./mini-Com/Utils";
 import Poster from "./mini-Com/Poster";
 import Score from "./mini-Com/Score";
+import { Movie } from "../../api";
 
 const View = styled.View`
     flex : 1;
@@ -38,6 +40,7 @@ interface SliderProps {
     original_title: string;
     vote_average: number;
     overview: string;
+    fullData : Movie;
 }
 
 const Slider:React.FC<SliderProps> = (
@@ -47,10 +50,21 @@ const Slider:React.FC<SliderProps> = (
         original_title,
         vote_average,
         overview,
+        fullData
     }
 ) => {
     const isDark = useColorScheme() === "dark";
+    const navigation = useNavigation();
+    const ToDetail = () => { 
+        navigation.navigate("Stack", {
+          screen: "Detail",
+          params: {
+            ...fullData
+          },
+        });
+    }
     return (
+    <TouchableWithoutFeedback onPress={ToDetail}>
     <View>
         <BgImg
            style={StyleSheet.absoluteFill}
@@ -68,7 +82,9 @@ const Slider:React.FC<SliderProps> = (
                </Column>
            </Wrapper>
         </BlurView>
-    </View>)
+    </View>
+    </TouchableWithoutFeedback>
+    )
 }
 
 export default Slider

@@ -1,23 +1,49 @@
-import React from "react";
-import styled from "styled-components/native";
+import React, { useState } from "react";
+import { useQueryClient, useQuery } from "react-query";
+import { tvAPI } from "../api";
+import Loader from "./components/mini-Com/Loader";
+import { RefreshControl, ScrollView } from "react-native";
+import HorList from "./components/Hor-List";
 
-const Container = styled.View`
-    flex : 1; 
-    justify-content: center;
-    align-items : center;
-    background-color : ${(props)=>props.theme.mainBgColor};
-    `;
-const Title = styled.Text`
-    color : ${(props)=>props.theme.textColor};
-    `;
 
 const TV = () =>{
+    const queryClient = useQueryClient()
+    const [refreshing, setRefreshing] = useState(false);
+    const {
+      isLoading: todayLoading,
+      data: todayData,
+    } = useQuery(["tv", "today"], tvAPI.Airing);
+    const {
+      isLoading: topLoading,
+      data: topData,
+    } = useQuery(["tv", "top"], tvAPI.topRated);
+    const {
+      isLoading: trendingLoading,
+      data: trendingData,
+    } = useQuery(["tv", "trending"], tvAPI.Trending);
 
+    const onRefresh = async () => {
+      setRefreshing(true);
+      await queryClient.refetchQueries(["tv"]);
+      setRefreshing(false);
+    };
+
+    const loading = todayLoading || topLoading || trendingLoading;
+    
+
+    if ( loading ) {
+        return <Loader/>;
+    }
     return (
-        <Container>
-            <Title> TV </Title>
-        </Container>
-    )
+      <ScrollView 
+        refreshControl={
+            <RefreshControl refreshing ={ refreshing } onRefresh ={onRefresh}/>
+            }>
+        <HorList title="Trending TV" data={trendingData.results} />
+        <HorList title="Airing Today" data={todayData.results}/>
+        <HorList title="Top Rated TV" data={topData.results}/>
+      </ScrollView>
+    );
     
 }
 

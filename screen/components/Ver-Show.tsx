@@ -2,11 +2,15 @@ import React from "react";
 import styled from "styled-components/native";
 import Poster from "./mini-Com/Poster";
 import Score from "./mini-Com/Score";
+import { useNavigation } from "@react-navigation/native"
+import { TouchableHighlight } from "react-native";
+import { Movie } from "../../api";
 
 const CSmovie = styled.View`
-    flex-direction : row;
-    justify-content : center;
-    `;
+  padding: 0px 10px;
+  flex-direction: row;
+  justify-content: center;
+`;
 const Column = styled.View`
     margin-left: 20px;
     width: 60%;
@@ -33,6 +37,7 @@ interface VS_Props {
     release_date?: string;
     vote_average?: number
     overview : string;
+    fullData : Movie
 }
 
 const Vertical_Showcase:React.FC<VS_Props> = (
@@ -41,10 +46,19 @@ const Vertical_Showcase:React.FC<VS_Props> = (
     original_title,
     release_date,
     vote_average,
-    overview
+    overview,
+    fullData
     }
 ) => {
-        return (
+    const navigation = useNavigation();
+    const ToDetail = () => { 
+        navigation.navigate("Stack", {
+          screen: "Detail",
+          params: { ...fullData },
+        });
+    }
+     return (
+         <TouchableHighlight onPress={ToDetail}>
                 <CSmovie>
                     <Poster path={poster_path}/>
                     <Column>
@@ -57,6 +71,7 @@ const Vertical_Showcase:React.FC<VS_Props> = (
                         </Overview>
                     </Column>
                 </CSmovie>
+        </TouchableHighlight>
             
         )
     }

@@ -2,9 +2,11 @@ import React from "react";
 import styled from "styled-components/native";
 import Poster from "./mini-Com/Poster";
 import Score from "./mini-Com/Score";
+import { useNavigation } from "@react-navigation/native"
+import { TouchableOpacity } from "react-native";
+import { Movie, TV } from "../../api";
 
-
-const Movie = styled.View`
+const MovieView = styled.View`
     align-items: center;
     justify-content: center;
     `;
@@ -20,24 +22,35 @@ interface HS_Props {
     poster_path : string;
     original_title : string;
     vote_average : number;
+    fullData : Movie | TV;
 }
 
 const HorizontalShowcase: React.FC<HS_Props> = (
     {
         poster_path,
         original_title,
-        vote_average
+        vote_average,
+        fullData
     }
 ) =>{
+    const navigation = useNavigation();
+    const ToDetail = () => { 
+        navigation.navigate("Stack", {
+          screen: "Detail",
+          params: { ...fullData },
+        });
+    }
     return (
-                    <Movie>
+            <TouchableOpacity onPress = {ToDetail}>
+                    <MovieView>
                         <Poster path={poster_path}/>
                         <MovieTitle>
                             {original_title.slice(0, 13)}
                             {original_title.length > 13 ? "...":null}
                         </MovieTitle>
                         <Score vote_average = { vote_average }/>
-                    </Movie>
+                    </MovieView>
+            </TouchableOpacity>
     )
 }
 

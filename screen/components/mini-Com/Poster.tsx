@@ -8,6 +8,7 @@ const IMG = styled.Image`
     border-radius: 6px;
     `;
 
+
 interface PosterProps {
     path : string;
 }
