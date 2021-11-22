@@ -43,11 +43,11 @@ interface BaseResponse {
 }
 
 export interface MovieResponse extends BaseResponse {
-    results : Movie[];
+  results: Movie[];
 }
 
 export interface TVResponse extends BaseResponse {
-    results : TV[];
+  results: TV[];
 }
 
 export const moviesAPI = {
@@ -63,14 +63,19 @@ export const moviesAPI = {
     fetch(
       `${BASIC_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1&region=KR `
     ).then((res) => res.json()),
-  Search: ({queryKey}) => {
+  Search: ({ queryKey }) => {
     const [_, query] = queryKey;
     return fetch(
       `${BASIC_URL}/search/movie?api_key=${API_KEY}&language=en-US&page=1&query=${query}`
-      ).then((res) => res.json());
-    }
+    ).then((res) => res.json());
+  },
+  Detail: ({ queryKey }) => {
+    const [_, id] = queryKey;
+    return fetch(
+      `${BASIC_URL}/movie/${id}?api_key=${API_KEY}&language=en-US&append_to_response=videos,images`
+    ).then((res) => res.json());
+  },
 };
-
 
 export const tvAPI = {
   Trending: () =>
@@ -85,10 +90,16 @@ export const tvAPI = {
     fetch(
       `${BASIC_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1&region=KR `
     ).then((res) => res.json()),
-  Search: ({queryKey}) => {
+  Search: ({ queryKey }) => {
     const [_, query] = queryKey;
     return fetch(
       `${BASIC_URL}/search/tv?api_key=${API_KEY}&language=en-US&page=1&query=${query}`
-      ).then((res) => res.json());
-  }
+    ).then((res) => res.json());
+  },
+  Detail: ({ queryKey }) => {
+    const [_, id] = queryKey;
+    return fetch(
+      `${BASIC_URL}/tv/${id}?api_key=${API_KEY}&language=en-US&append_to_response=videos,images`
+    ).then((res) => res.json());
+},
 };
